@@ -191,7 +191,3 @@ npm run dev
 </div>
 
 ---
-
-## 📜 **License**
-
-MIT License — Copyright (c) 2026 Ningaraju K
