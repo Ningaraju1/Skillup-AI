@@ -129,7 +129,7 @@ graph TD
 
 ```bash
 ✅ Python 3.10+
-✅ Node.js 18+ (for frontend)
+✅ VITE React.js(for frontend)
 ✅ Groq API Key (Free)
 ```
 
