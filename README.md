@@ -13,7 +13,6 @@ emoji: 🚀
   <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django"/>
   <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React"/>
   <img src="https://img.shields.io/badge/LangGraph-Agentic-7c3aed?style=for-the-badge&logo=statuspage&logoColor=white" alt="LangGraph"/>
-  <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License"/>
 </p>
 
 <p align="center">
