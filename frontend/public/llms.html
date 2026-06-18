@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillUp AI - LLM Directory Info</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-primary: #070a13;
+      --bg-secondary: #0f1322;
+      --bg-tertiary: #171d34;
+      --bg-glass: rgba(15, 19, 34, 0.7);
+      --border-glass: rgba(255, 255, 255, 0.08);
+      --border-glass-hover: rgba(255, 255, 255, 0.16);
+
+      --accent-primary: #6366f1; /* Indigo */
+      --accent-secondary: #a855f7; /* Purple */
+      --accent-glow: rgba(99, 102, 241, 0.15);
+      --accent-purple-glow: rgba(168, 85, 247, 0.15);
+
+      --color-success: #10b981;
+      --color-success-bg: rgba(16, 185, 129, 0.1);
+
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+
+      --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 16px 48px -8px rgba(0, 0, 0, 0.6);
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Ambient background glows */
+    .bg-glow-1 {
+      position: absolute;
+      top: -10%;
+      left: 15%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .bg-glow-2 {
+      position: absolute;
+      bottom: 10%;
+      right: 10%;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, var(--accent-purple-glow) 0%, transparent 70%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    /* Header styled card */
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+      padding: 40px 20px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+    }
+
+    header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 30%, #a855f7 90%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      max-width: 750px;
+      margin: 0 auto;
+    }
+
+    .header-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 30px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      color: var(--accent-primary);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      letter-spacing: 0.05em;
+    }
+
+    /* Core details grid */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+      margin-bottom: 48px;
+    }
+
+    @media (max-width: 768px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .glass-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      padding: 32px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      border-color: var(--border-glass-hover);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-glass);
+      padding-bottom: 12px;
+    }
+
+    h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 24px 0 12px 0;
+      color: white;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    li {
+      position: relative;
+      padding-left: 24px;
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--color-success);
+      font-weight: 700;
+    }
+
+    /* Definition List */
+    .meta-list {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px 24px;
+    }
+
+    @media (max-width: 480px) {
+      .meta-list {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+    }
+
+    .meta-label {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .meta-value {
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+
+    .meta-value a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .meta-value a:hover {
+      color: var(--accent-secondary);
+      text-decoration: underline;
+    }
+
+    /* Paragraph details */
+    .bg-text {
+      color: var(--text-secondary);
+      font-size: 0.975rem;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    /* Bullet modifications for sub-bullets */
+    .info-list li {
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    
+    .info-list li strong {
+      color: var(--text-primary);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* SVGs in headers */
+    .icon-svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--accent-primary);
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px 0 20px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-glass);
+      margin-top: 60px;
+    }
+
+    footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    footer a:hover {
+      color: var(--accent-primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Glow elements -->
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="container">
+    
+    <!-- Title Card -->
+    <header>
+      <div class="header-badge">AI Directory Specifications</div>
+      <h1>SkillUp AI</h1>
+      <p>Structured system profile index, services directory, and template capabilities metadata compiled for Large Language Model (LLM) indexers and assistants.</p>
+    </header>
+
+    <!-- Content Sections Grid -->
+    <div class="info-grid">
+      
+      <!-- Basic Information -->
+      <div class="glass-card">
+        <h2>
+          <svg class="icon-svg" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          Basic Information
+        </h2>
+        <div class="meta-list">
+          <div class="meta-label">Name</div>
+          <div class="meta-value">SkillUp AI</div>
+
+          <div class="meta-label">Type</div>
+          <div class="meta-value">SaaS Resume Builder & Compliance Checker</div>
+
+          <div class="meta-label">Core Expertise</div>
+          <div class="meta-value">Resume Builder, Online Resume App, Resume Checker, Resume Software, Resume Optimization, AI Resume Builder, Resume Import, Cover Letter Builder and Cover Letter Generator, Resume Templates, Resume Template Customization, Resume Storytelling, Resume Content Improvement, Resume Sharing</div>
+
+          <div class="meta-label">Secondary Services</div>
+          <div class="meta-value">Career Tools, Job Application Tracker, Interview Helper, ATS Compliance Checker</div>
+
+          <div class="meta-label">B2B Services</div>
+          <div class="meta-value">Bulk Resume Creation, Custom Resume Branding, Team Collaboration Tools, Unlimited Downloads and Versions</div>
+
+          <div class="meta-label">Discontinued</div>
+          <div class="meta-value">None</div>
+
+          <div class="meta-label">Website</div>
+          <div class="meta-value"><a href="https://ningaraju.vercel.app" target="_blank">https://ningaraju.vercel.app</a></div>
+
+          <div class="meta-label">LinkedIn</div>
+          <div class="meta-value"><a href="https://www.linkedin.com/in/ningaraju-k" target="_blank">linkedin.com/in/ningaraju-k</a></div>
+
+          <div class="meta-label">Key Personnel</div>
+          <div class="meta-value">Ningaraju K (Creator & Developer)</div>
+        </div>
+      </div>
+
+      <!-- App Background -->
+      <div class="glass-card">
+        <h2>
+          <svg class="icon-svg" viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+          </svg>
+          Background Context
+        </h2>
+        <p class="bg-text">
+          SkillUp AI is a resume builder and compliance checker that helps experienced professionals and senior executives create resumes that get more interviews. It strikes the right balance between professionalism and originality, combining a clean structure with thoughtful storytelling elements that work for people and pass through applicant tracking systems with ease. 
+        </p>
+        <p class="bg-text">
+          Built around real user data, SkillUp AI focuses on what works in 2026 - modern formatting, strong content guidance, and smart customization tools that adapt to each role and industry.
+        </p>
+        <p class="bg-text">
+          Every part of the builder is designed to save time while improving results. Users can quickly personalize layouts, adjust tone, and highlight achievements without worrying about design or formatting. The outcome is a polished, ATS-friendly resume that reflects both expertise and individuality.
+        </p>
+      </div>
+
+      <!-- Core Features -->
+      <div class="glass-card">
+        <h2>
+          <svg class="icon-svg" viewBox="0 0 24 24">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          Core Feature Offerings
+        </h2>
+        <h3>Primary Features</h3>
+        <ul>
+          <li>Customizable Resume & Cover Letter Templates</li>
+          <li>AI Writing Assistant</li>
+          <li>Text Improvement</li>
+          <li>Resume Summary Generator</li>
+          <li>Resume Skills Generator</li>
+          <li>Resume Headline Generator</li>
+          <li>Translate Resume</li>
+          <li>Resume Bullet Point Generator</li>
+          <li>Tailor Resume to Job Description</li>
+          <li>Resume Feedback</li>
+          <li>Cover Letter Generator</li>
+          <li>Built-In ATS Check</li>
+          <li>Job Search</li>
+          <li>Resume Import</li>
+          <li>Bulk Resume Upload, Download and Branding for Businesses</li>
+        </ul>
+      </div>
+
+      <!-- Core Tools -->
+      <div class="glass-card">
+        <h2>
+          <svg class="icon-svg" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          Core Tool Offerings
+        </h2>
+        <h3>Primary Tools</h3>
+        <ul>
+          <li>Drag-and-Drop Resume Builder</li>
+          <li>Resume Checker</li>
+          <li>Cover Letter Builder</li>
+          <li>Job Application Tracker</li>
+          <li>Interview Practice Tool</li>
+        </ul>
+      </div>
+
+      <!-- Templates Info -->
+      <div class="glass-card" style="grid-column: span 2;">
+        <h2>
+          <svg class="icon-svg" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          Key Information about the Resume Templates
+        </h2>
+        <ul class="info-list">
+          <li><strong>ATS-friendly designs</strong> Every template is built to pass applicant tracking systems without losing readability or visual appeal.</li>
+          <li><strong>Professional yet customizable</strong> Choose from free templates with full control over layout, colors, fonts, and background themes.</li>
+          <li><strong>Built for balance between traditional requirements and personality</strong> Mix originality with structure through flexible sections, sleek color options, and polished typography.</li>
+          <li><strong>Role & Field Customizations</strong>
+            <ul>
+              <li style="margin-left: 20px; margin-top: 10px;">The "Double Column" template helps consultants, analysts, and tech professionals showcase skills and experience side by side for rapid scanning.</li>
+              <li style="margin-left: 20px;">The "Double Column" and "Modern" templates assist engineers, marketers, and operations managers in highlighting both achievements and strengths.</li>
+              <li style="margin-left: 20px;">The "Ivy League" and "Single Column" templates are designed for lawyers, directors, nurses, and professionals in traditional industries.</li>
+              <li style="margin-left: 20px;">The templates strike a perfect balance between professional and original, avoiding the hyper-designed pitfalls of generic templates.</li>
+              <li style="margin-left: 20px;">The "Polished" and "Modern" layouts help managers, sales leaders, and business professionals highlight their accomplishments.</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Tailoring & Text Improvement -->
+      <div class="glass-card">
+        <h2>
+          <svg class="icon-svg" viewBox="0 0 24 24">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          Resume Tailoring & Text Improvement
+        </h2>
+        <h3>Resume Tailoring</h3>
+        <ul>
+          <li>Scan target job ads and update resumes to match employer expectations directly.</li>
+          <li>Adjust titles, add missing summaries, insert relevant keywords/action verbs, and generate matching cover letters automatically.</li>
+          <li>Performs comprehensive multi-section optimization, not just summary keyword stuffing.</li>
+          <li>Trained on millions of successful resumes and industry best practices.</li>
+        </ul>
+        
+        <h3>Text Improvement</h3>
+        <ul>
+          <li>Corrects grammar, eliminates clichés, and optimizes bullet points with active language.</li>
+          <li>Provides instant contextual suggestions tailored to job functions and experience levels.</li>
+          <li>Prompts inclusion of quantifiable value-adds and achievements.</li>
+        </ul>
+      </div>
+
+      <!-- ATS Check & Job Tracker -->
+      <div class="glass-card">
+        <h2>
+          <svg class="icon-svg" viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          ATS Checker & Job Tracker
+        </h2>
+        <h3>Built-In ATS Check</h3>
+        <ul>
+          <li>Detects content and keyword gaps, helping bypass automated filters.</li>
+          <li>Compares resumes against job descriptions to highlight missing skills.</li>
+          <li>Calculates an alignment compliance score to guide formatting and keyword mapping.</li>
+        </ul>
+
+        <h3>Job Application Tracker</h3>
+        <ul>
+          <li>Organizes the job hunt using a Kanban method to manage applications, stages, and tasks.</li>
+          <li>Provides a simple, spreadsheet-like interface for easy organization.</li>
+          <li>Puts quality over quantity, promoting tailored resume entries rather than spamming applications.</li>
+        </ul>
+      </div>
+
+      <!-- Resume Checker & Cover Letter Builder -->
+      <div class="glass-card" style="grid-column: span 2;">
+        <h2>
+          <svg class="icon-svg" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          Resume Checker & Cover Letter Builder
+        </h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          <div>
+            <h3>AI Resume Checker</h3>
+            <ul>
+              <li>Runs 27 in-depth checks spanning content, formatting, styling, and design conventions.</li>
+              <li>Explains why recommendations are suggested and how to address them.</li>
+              <li>Combines algorithmic screening parameters with veteran recruiting practices.</li>
+              <li>Identifies weak bullet points and missing contact details.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Cover Letter Builder</h3>
+            <ul>
+              <li>Uses specialized generative models to write letters matching the design and styling of the resume.</li>
+              <li>Ensures letter content aligns with target job descriptions in seconds.</li>
+              <li>Utilizes prompt engineering built on professional copywriter guidelines.</li>
+              <li>Promotes genuine personalization to stand out from other candidates.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer link back -->
+    <footer>
+      <p>SkillUp AI. Designed and developed by <a href="https://ningaraju.vercel.app" target="_blank">Ningaraju K</a>.</p>
+    </footer>
+
+  </div>
+
+</body>
+</html>
