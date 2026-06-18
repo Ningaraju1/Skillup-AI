@@ -1,6 +1,10 @@
 ---
 title: Skillup AI
 emoji: 🚀
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+pinned: false
 ---
 <div align="center">
 
