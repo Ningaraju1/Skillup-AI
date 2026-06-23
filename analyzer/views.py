@@ -8,6 +8,7 @@ from .services.pdf_parser import extract_text
 from analyzer.agents.langgraph_flow import build_graph
 from analyzer.memory.embedding import get_embedding
 from analyzer.memory.vector_store import store_resume_embedding
+from analyzer.services.ai_service import evaluate_interview_answer
 
 import math
 import re
@@ -205,3 +206,24 @@ class ResumeUploadView(APIView):
             "improvements": improvements,
             "questions": questions
         }, status=status.HTTP_200_OK)
+
+
+# -------------------------
+# INTERVIEW EVALUATE API VIEW
+# -------------------------
+class InterviewAnswerEvaluateView(APIView):
+
+    def post(self, request):
+        question = request.data.get("question")
+        answer = request.data.get("answer")
+        q_type = request.data.get("type", "General")
+
+        if not question or not answer:
+            return Response(
+                {"error": "question and answer required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        feedback = evaluate_interview_answer(question, answer, q_type)
+
+        return Response(feedback, status=status.HTTP_200_OK)

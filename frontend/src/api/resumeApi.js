@@ -85,3 +85,20 @@ export const uploadResume = async (file, jobDescription) => {
   saveReport(newReport);
   return newReport;
 };
+
+export const evaluateAnswer = async (question, answer, type) => {
+  const response = await fetch(`${API_BASE_URL}/api/resume/evaluate-answer/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ question, answer, type }),
+  });
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.error || `Evaluation failed with status ${response.status}`);
+  }
+
+  return await response.json();
+};

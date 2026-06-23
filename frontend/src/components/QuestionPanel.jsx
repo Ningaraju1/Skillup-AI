@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { HelpCircle, ChevronDown, ChevronUp, BookOpen, User, Briefcase, CheckCircle } from 'lucide-react';
+import { HelpCircle, ChevronDown, ChevronUp, BookOpen, User, Briefcase, CheckCircle, Sparkles, AlertCircle, ArrowUpRight } from 'lucide-react';
+import { evaluateAnswer } from '../api/resumeApi';
 
 function QuestionPanel({ questions = [] }) {
   const [openIndex, setOpenIndex] = useState(null);
   const [answers, setAnswers] = useState({});
   const [submittedAnswers, setSubmittedAnswers] = useState({});
+  const [feedbacks, setFeedbacks] = useState({});
+  const [loadingFeedbacks, setLoadingFeedbacks] = useState({});
 
   const toggleAccordion = (idx) => {
     setOpenIndex(openIndex === idx ? null : idx);
@@ -16,6 +19,19 @@ function QuestionPanel({ questions = [] }) {
 
   const submitAnswer = (idx) => {
     setSubmittedAnswers(prev => ({ ...prev, [idx]: true }));
+  };
+
+  const handleGetFeedback = async (idx, question, answer, type) => {
+    setLoadingFeedbacks(prev => ({ ...prev, [idx]: true }));
+    try {
+      const result = await evaluateAnswer(question, answer, type);
+      setFeedbacks(prev => ({ ...prev, [idx]: result }));
+    } catch (err) {
+      console.error("AI Coach evaluation failed:", err);
+      alert("Failed to get AI Coach feedback: " + err.message);
+    } finally {
+      setLoadingFeedbacks(prev => ({ ...prev, [idx]: false }));
+    }
   };
 
   const getTypeIcon = (type) => {
@@ -167,34 +183,149 @@ function QuestionPanel({ questions = [] }) {
                           </button>
                         </div>
                       ) : (
-                        <div style={{
-                          padding: '16px',
-                          borderRadius: '8px',
-                          backgroundColor: 'rgba(16, 185, 129, 0.05)',
-                          border: '1px solid rgba(16, 185, 129, 0.15)'
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: 'var(--color-success)', fontWeight: '600', fontSize: '0.85rem' }}>
-                            <CheckCircle size={16} />
-                            <span>Saved Response</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          <div style={{
+                            padding: '16px',
+                            borderRadius: '8px',
+                            backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                            border: '1px solid rgba(16, 185, 129, 0.15)'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: 'var(--color-success)', fontWeight: '600', fontSize: '0.85rem' }}>
+                              <CheckCircle size={16} />
+                              <span>Saved Response</span>
+                            </div>
+                            <p style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap', color: 'var(--text-primary)', margin: '0 0 10px 0' }}>
+                              {answers[idx]}
+                            </p>
+                            <button 
+                              onClick={() => setSubmittedAnswers(prev => ({ ...prev, [idx]: false }))}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'var(--text-secondary)',
+                                textDecoration: 'underline',
+                                fontSize: '0.75rem',
+                                cursor: 'pointer',
+                                padding: 0
+                              }}
+                            >
+                              Edit Response
+                            </button>
                           </div>
-                          <p style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}>
-                            {answers[idx]}
-                          </p>
-                          <button 
-                            onClick={() => setSubmittedAnswers(prev => ({ ...prev, [idx]: false }))}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: 'var(--text-secondary)',
-                              textDecoration: 'underline',
-                              fontSize: '0.75rem',
-                              cursor: 'pointer',
-                              marginTop: '10px',
-                              padding: 0
-                            }}
-                          >
-                            Edit Response
-                          </button>
+
+                          {/* AI COACH FEEDBACK AREA */}
+                          {!feedbacks[idx] ? (
+                            <button
+                              onClick={() => handleGetFeedback(idx, q.question, answers[idx], q.type)}
+                              disabled={loadingFeedbacks[idx]}
+                              className="btn btn-primary"
+                              style={{
+                                padding: '10px 16px',
+                                fontSize: '0.85rem',
+                                alignSelf: 'flex-start',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                              }}
+                            >
+                              {loadingFeedbacks[idx] ? (
+                                <>
+                                  <div className="rotating-icon" style={{
+                                    width: '14px', height: '14px', border: '2px solid rgba(255, 255, 255, 0.3)',
+                                    borderTopColor: '#fff', borderRadius: '50%',
+                                    animation: 'spin 1s linear infinite'
+                                  }}></div>
+                                  Evaluating Response...
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles size={16} /> Get AI Recruiter Feedback
+                                </>
+                              )}
+                            </button>
+                          ) : (
+                            <div className="glass-card animate-fade-in" style={{
+                              padding: '20px',
+                              border: '1px solid rgba(168, 85, 247, 0.2)',
+                              backgroundColor: 'rgba(168, 85, 247, 0.02)'
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '10px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-secondary)', fontWeight: '700', fontSize: '0.9rem' }}>
+                                  <Sparkles size={16} />
+                                  <span>AI Recruiter Evaluation</span>
+                                </div>
+                                <span style={{
+                                  padding: '4px 10px',
+                                  borderRadius: '20px',
+                                  fontSize: '0.8rem',
+                                  fontWeight: '800',
+                                  backgroundColor: feedbacks[idx].score >= 80 ? 'rgba(16, 185, 129, 0.15)' :
+                                                   feedbacks[idx].score >= 50 ? 'rgba(234, 179, 8, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                                  color: feedbacks[idx].score >= 80 ? 'var(--color-success)' :
+                                         feedbacks[idx].score >= 50 ? 'var(--color-warning)' : 'var(--color-danger)'
+                                }}>
+                                  Match Score: {feedbacks[idx].score}%
+                                </span>
+                              </div>
+
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                                {/* Strengths */}
+                                <div>
+                                  <span style={{ fontSize: '0.75rem', color: 'var(--color-success)', textTransform: 'uppercase', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
+                                    ✓ Key Strengths
+                                  </span>
+                                  <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.825rem', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    {feedbacks[idx].strengths?.map((str, sIdx) => (
+                                      <li key={sIdx}>{str}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+
+                                {/* Improvements */}
+                                <div>
+                                  <span style={{ fontSize: '0.75rem', color: '#f59e0b', textTransform: 'uppercase', fontWeight: '700', display: 'block', marginBottom: '4px' }}>
+                                    ⚠ Areas for Improvement
+                                  </span>
+                                  <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.825rem', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    {feedbacks[idx].improvements?.map((imp, iIdx) => (
+                                      <li key={iIdx}>{imp}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+
+                                {/* Model Answer */}
+                                <div style={{
+                                  backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                                  padding: '12px 16px',
+                                  borderRadius: '8px',
+                                  borderLeft: '3px solid var(--accent-secondary)'
+                                }}>
+                                  <span style={{ fontSize: '0.75rem', color: 'var(--accent-secondary)', textTransform: 'uppercase', fontWeight: '700', display: 'block', marginBottom: '6px' }}>
+                                    ★ Recommended Response Refinement
+                                  </span>
+                                  <p style={{ fontSize: '0.825rem', lineHeight: '1.4', margin: 0, whiteSpace: 'pre-wrap', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                                    "{feedbacks[idx].model_answer}"
+                                  </p>
+                                </div>
+
+                                <button
+                                  onClick={() => setFeedbacks(prev => ({ ...prev, [idx]: null }))}
+                                  style={{
+                                    alignSelf: 'flex-start',
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--text-muted)',
+                                    textDecoration: 'underline',
+                                    fontSize: '0.725rem',
+                                    cursor: 'pointer',
+                                    padding: 0
+                                  }}
+                                >
+                                  Reset Evaluation
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
