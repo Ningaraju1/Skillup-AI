@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getReportById } from '../api/resumeApi';
+import { getReportById, saveReport } from '../api/resumeApi';
 import ScoreCard from '../components/ScoreCard';
 import SkillRadar from '../components/SkillRadar';
 import CareerPath from '../components/CareerPath';
@@ -150,6 +150,17 @@ function ResumeReport() {
       {/* 4. Interview Coaching Questions */}
       <QuestionPanel 
         questions={report.questions}
+        savedAnswers={report.practice_answers}
+        savedFeedbacks={report.practice_feedbacks}
+        onSaveQA={(updatedAnswers, updatedFeedbacks) => {
+          const updatedReport = {
+            ...report,
+            practice_answers: updatedAnswers,
+            practice_feedbacks: updatedFeedbacks
+          };
+          saveReport(updatedReport);
+          setReport(updatedReport);
+        }}
       />
 
     </div>

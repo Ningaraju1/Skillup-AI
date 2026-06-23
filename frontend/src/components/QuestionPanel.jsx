@@ -2,12 +2,24 @@ import React, { useState } from 'react';
 import { HelpCircle, ChevronDown, ChevronUp, BookOpen, User, Briefcase, CheckCircle, Sparkles, AlertCircle, ArrowUpRight } from 'lucide-react';
 import { evaluateAnswer } from '../api/resumeApi';
 
-function QuestionPanel({ questions = [] }) {
+function QuestionPanel({ questions = [], savedAnswers = {}, savedFeedbacks = {}, onSaveQA }) {
   const [openIndex, setOpenIndex] = useState(null);
   const [answers, setAnswers] = useState({});
   const [submittedAnswers, setSubmittedAnswers] = useState({});
   const [feedbacks, setFeedbacks] = useState({});
   const [loadingFeedbacks, setLoadingFeedbacks] = useState({});
+
+  React.useEffect(() => {
+    setAnswers(savedAnswers || {});
+    setFeedbacks(savedFeedbacks || {});
+    const subs = {};
+    Object.keys(savedAnswers || {}).forEach(key => {
+      if (savedAnswers[key]?.trim()) {
+        subs[key] = true;
+      }
+    });
+    setSubmittedAnswers(subs);
+  }, [savedAnswers, savedFeedbacks]);
 
   const toggleAccordion = (idx) => {
     setOpenIndex(openIndex === idx ? null : idx);
@@ -19,13 +31,20 @@ function QuestionPanel({ questions = [] }) {
 
   const submitAnswer = (idx) => {
     setSubmittedAnswers(prev => ({ ...prev, [idx]: true }));
+    if (onSaveQA) {
+      onSaveQA({ ...answers, [idx]: answers[idx] }, feedbacks);
+    }
   };
 
   const handleGetFeedback = async (idx, question, answer, type) => {
     setLoadingFeedbacks(prev => ({ ...prev, [idx]: true }));
     try {
       const result = await evaluateAnswer(question, answer, type);
-      setFeedbacks(prev => ({ ...prev, [idx]: result }));
+      const nextFeedbacks = { ...feedbacks, [idx]: result };
+      setFeedbacks(nextFeedbacks);
+      if (onSaveQA) {
+        onSaveQA(answers, nextFeedbacks);
+      }
     } catch (err) {
       console.error("AI Coach evaluation failed:", err);
       alert("Failed to get AI Coach feedback: " + err.message);
@@ -309,7 +328,14 @@ function QuestionPanel({ questions = [] }) {
                                 </div>
 
                                 <button
-                                  onClick={() => setFeedbacks(prev => ({ ...prev, [idx]: null }))}
+                                  onClick={() => {
+                                    const nextFeedbacks = { ...feedbacks };
+                                    delete nextFeedbacks[idx];
+                                    setFeedbacks(nextFeedbacks);
+                                    if (onSaveQA) {
+                                      onSaveQA(answers, nextFeedbacks);
+                                    }
+                                  }}
                                   style={{
                                     alignSelf: 'flex-start',
                                     background: 'none',
