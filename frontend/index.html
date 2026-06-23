@@ -29,64 +29,97 @@
         flex-direction: column;
         align-items: center;
       }
-      .loader-logo {
-        color: #6366f1;
-        filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.4));
-        animation: spin-glow 2s infinite ease-in-out;
-        margin-bottom: 20px;
+      .scanner-container {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+      }
+      .scanner-document {
+        color: rgba(99, 102, 241, 0.35);
+        filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.15));
+        animation: float 2.5s infinite ease-in-out;
+      }
+      .scanner-laser {
+        position: absolute;
+        left: 0;
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #10b981, transparent);
+        filter: drop-shadow(0 0 6px #10b981) drop-shadow(0 0 10px #10b981);
+        animation: scan 2s infinite ease-in-out;
       }
       .loader-title {
         font-family: 'Outfit', sans-serif;
         font-size: 2.25rem;
         font-weight: 800;
-        margin: 0 0 8px 0;
+        margin: 0 0 12px 0;
         background: linear-gradient(135deg, #6366f1, #a855f7);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         letter-spacing: -0.025em;
+        animation: shimmer 3s infinite ease-in-out;
       }
-      .loader-subtitle {
+      .loader-status {
         font-family: 'Outfit', sans-serif;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         color: #9ca3af;
-        margin: 0 0 24px 0;
-        letter-spacing: 0.05em;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 6px 14px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
       }
-      .loader-bar-container {
-        width: 180px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 2px;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.03);
+      .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #10b981;
+        box-shadow: 0 0 8px #10b981;
+        animation: pulse-glow 1.5s infinite ease-in-out;
       }
-      .loader-bar {
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, #6366f1, #a855f7);
-        transform: translateX(-100%);
-        animation: loading-progress 1.5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+      @keyframes float {
+        0%, 100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
       }
-      @keyframes spin-glow {
+      @keyframes scan {
+        0%, 100% {
+          top: 10%;
+          opacity: 0.3;
+        }
+        50% {
+          top: 90%;
+          opacity: 1;
+        }
+      }
+      @keyframes pulse-glow {
         0%, 100% {
           transform: scale(1);
-          filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.4)) drop-shadow(0 0 20px rgba(168, 85, 247, 0.2));
+          opacity: 0.5;
         }
         50% {
-          transform: scale(1.12);
-          filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.8)) drop-shadow(0 0 35px rgba(168, 85, 247, 0.5));
+          transform: scale(1.3);
+          opacity: 1;
         }
       }
-      @keyframes loading-progress {
-        0% {
-          transform: translateX(-100%);
+      @keyframes shimmer {
+        0%, 100% {
+          opacity: 0.95;
         }
         50% {
-          transform: translateX(0);
-        }
-        100% {
-          transform: translateX(100%);
+          opacity: 0.75;
         }
       }
     </style>
@@ -94,17 +127,20 @@
   <body>
     <div id="app-loader">
       <div class="loader-content">
-        <svg class="loader-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="48" height="48">
-          <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/>
-          <path d="M14 2v4a2 2 0 0 0 2 2h4"/>
-          <path d="M10 9H8"/>
-          <path d="M16 13H8"/>
-          <path d="M16 17H8"/>
-        </svg>
+        <div class="scanner-container">
+          <svg class="scanner-document" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="64" height="64">
+            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/>
+            <path d="M14 2v4a2 2 0 0 0 2 2h4"/>
+            <path d="M10 9H8"/>
+            <path d="M16 13H8"/>
+            <path d="M16 17H8"/>
+          </svg>
+          <div class="scanner-laser"></div>
+        </div>
         <h1 class="loader-title">SkillUp AI</h1>
-        <p class="loader-subtitle">Where Ambition Meets Intelligence</p>
-        <div class="loader-bar-container">
-          <div class="loader-bar"></div>
+        <div class="loader-status">
+          <span class="pulse-dot"></span>
+          Analyzing Profile
         </div>
       </div>
     </div>
