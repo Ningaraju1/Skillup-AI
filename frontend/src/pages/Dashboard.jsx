@@ -64,6 +64,7 @@ function Dashboard() {
     const map = {
       'ai_ml': 'AI / ML',
       'data_science': 'Data Science',
+      'software_testing': 'Software Testing',
       'backend': 'Backend',
       'frontend': 'Frontend',
       'cloud_devops': 'DevOps',

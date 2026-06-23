@@ -6,6 +6,7 @@ function CareerPath({ category, paths = [], improvements = [] }) {
     const map = {
       'ai_ml': 'Artificial Intelligence & Machine Learning',
       'data_science': 'Data Science & Analytics',
+      'software_testing': 'Software Testing & QA',
       'backend': 'Backend Engineering',
       'frontend': 'Frontend Engineering',
       'cloud_devops': 'Cloud Architecture & DevOps',
@@ -18,6 +19,7 @@ function CareerPath({ category, paths = [], improvements = [] }) {
     const map = {
       'ai_ml': '#a855f7', // Purple
       'data_science': '#3b82f6', // Blue
+      'software_testing': '#06b6d4', // Teal
       'backend': '#10b981', // Green
       'frontend': '#ec4899', // Pink
       'cloud_devops': '#f59e0b', // Amber

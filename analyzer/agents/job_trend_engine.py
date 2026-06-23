@@ -66,28 +66,54 @@ TRENDING_SKILLS = {
 
     # ---------------- BACKEND / FULL STACK ----------------
     "backend": [
+        "Java",
         "Python",
         "Django",
         "FastAPI",
         "Flask",
         "Node.js",
+        "Spring Boot",
+        "Spring Framework",
+        "Hibernate",
+        "JPA",
+        "Express.js",
         "REST API",
         "GraphQL",
         "MySQL",
         "PostgreSQL",
-        "MongoDB"
+        "MongoDB",
+        "MERN Stack",
+        "MEAN Stack"
     ],
 
     # ---------------- FRONTEND ----------------
     "frontend": [
         "React",
+        "Angular",
         "Next.js",
         "TypeScript",
         "JavaScript",
         "HTML",
         "CSS",
         "Redux",
-        "Tailwind CSS"
+        "Tailwind CSS",
+        "WordPress"
+    ],
+
+    # ---------------- SOFTWARE TESTING ----------------
+    "software_testing": [
+        "Software Testing",
+        "Manual Testing",
+        "Automation Testing",
+        "Selenium",
+        "Cypress",
+        "Playwright",
+        "JUnit",
+        "TestNG",
+        "Postman",
+        "JMeter",
+        "API Testing",
+        "QA Engineering"
     ],
 
     # ---------------- SYSTEM DESIGN ----------------
@@ -110,6 +136,18 @@ TRENDING_SKILLS = {
 def analyze_trends(resume_skills: List[str]) -> Dict:
 
     resume_set = set([s.lower().strip() for s in resume_skills])
+
+    # Expand MEAN/MERN stacks implicitly in both directions
+    if "mern" in resume_set or "mern stack" in resume_set:
+        resume_set.update(["mongodb", "express", "express.js", "react", "node.js"])
+    if "mean" in resume_set or "mean stack" in resume_set:
+        resume_set.update(["mongodb", "express", "express.js", "angular", "node.js"])
+
+    # If they have all core component technologies, implicitly match the stack name too
+    if {"mongodb", "react", "node.js"}.issubset(resume_set) or {"mongodb", "express.js", "react", "node.js"}.issubset(resume_set):
+        resume_set.update(["mern", "mern stack"])
+    if {"mongodb", "angular", "node.js"}.issubset(resume_set) or {"mongodb", "express.js", "angular", "node.js"}.issubset(resume_set):
+        resume_set.update(["mean", "mean stack"])
 
     result = {
         "matched_categories": {},
@@ -164,6 +202,13 @@ def analyze_trends(resume_skills: List[str]) -> Dict:
             "Data Analyst",
             "Data Scientist",
             "Business Analyst"
+        ]
+
+    elif best_category == "software_testing":
+        result["career_direction"] = [
+            "QA Engineer",
+            "Software Development Engineer in Test (SDET)",
+            "Automation Test Engineer"
         ]
 
     elif best_category == "backend":

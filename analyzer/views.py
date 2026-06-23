@@ -10,6 +10,7 @@ from analyzer.memory.embedding import get_embedding
 from analyzer.memory.vector_store import store_resume_embedding
 
 import math
+import re
 
 
 # -------------------------
@@ -35,13 +36,16 @@ def detect_category(skills: list):
     if any(x in skill_text for x in ["pandas", "numpy", "sql", "power bi", "excel", "tableau"]):
         return "data_science"
 
-    if any(x in skill_text for x in ["django", "fastapi", "node", "api"]):
+    if any(x in skill_text for x in ["testing", "qa", "selenium", "cypress", "playwright", "junit", "testng", "sdet", "postman", "jmeter"]):
+        return "software_testing"
+
+    if any(x in skill_text for x in ["django", "fastapi", "node", "api", "springboot", "spring boot", "mern", "mean", "spring framework", "hibernate", "jpa", "express", "express.js"]) or bool(re.search(r'\bjava\b', skill_text)):
         return "backend"
 
-    if any(x in skill_text for x in ["react", "html", "css", "javascript"]):
+    if any(x in skill_text for x in ["react", "html", "css", "javascript", "nextjs", "next.js", "wordpress", "angular", "angularjs"]):
         return "frontend"
 
-    if any(x in skill_text for x in ["aws", "docker", "kubernetes", "ci/cd"]):
+    if any(x in skill_text for x in ["aws", "docker", "kubernetes", "ci/cd", "gcp", "azure"]):
         return "cloud_devops"
 
     return "system_design"
@@ -57,6 +61,9 @@ def generate_career_path(category: str):
 
     elif category == "data_science":
         return ["Data Analyst", "Data Scientist", "Business Analyst"]
+
+    elif category == "software_testing":
+        return ["QA Engineer", "Software Development Engineer in Test (SDET)", "Automation Test Engineer"]
 
     elif category == "backend":
         return ["Backend Developer", "Full Stack Developer", "API Engineer"]
