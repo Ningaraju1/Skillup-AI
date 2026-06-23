@@ -51,7 +51,9 @@ RULES:
 - No markdown
 - No explanation
 - No extra text
-- Be strict and realistic
+- Be strict, realistic, and highly selective.
+- "matched_skills" MUST ONLY contain technical skills from the Resume that are directly relevant, required, or mentioned in the Job Description. DO NOT include general web development or unrelated skills (such as React, Django, HTML, CSS, JS, SQL) in "matched_skills" if the Job Description focuses on a completely different domain (like LLMs, AI, machine learning, data science, etc.) unless the job description explicitly requires them.
+- "missing_skills" MUST contain the core technologies, skills, or conceptual frameworks mentioned or implied by the Job Description that are missing from the Resume.
 
 OUTPUT FORMAT:
 {{
