@@ -227,3 +227,23 @@ class InterviewAnswerEvaluateView(APIView):
         feedback = evaluate_interview_answer(question, answer, q_type)
 
         return Response(feedback, status=status.HTTP_200_OK)
+
+
+# -------------------------
+# RESUME LIST API VIEW
+# -------------------------
+class ResumeListView(APIView):
+
+    def get(self, request):
+        resumes = Resume.objects.all().order_by("-uploaded_at")
+        data = []
+        for r in resumes:
+            data.append({
+                "id": r.id,
+                "uploaded_at": r.uploaded_at.isoformat(),
+                "resume_file": r.resume_file.url if r.resume_file else None,
+                "skills": r.skills,
+                "ats_score": r.ats_score,
+                "improvements": r.improvements
+            })
+        return Response(data, status=status.HTTP_200_OK)
