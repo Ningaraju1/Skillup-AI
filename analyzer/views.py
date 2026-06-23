@@ -235,6 +235,11 @@ class InterviewAnswerEvaluateView(APIView):
 class ResumeListView(APIView):
 
     def get(self, request):
+        action = request.query_params.get("action")
+        if action == "clear":
+            count, _ = Resume.objects.all().delete()
+            return Response({"message": f"Successfully deleted {count} records from database"}, status=status.HTTP_200_OK)
+
         resumes = Resume.objects.all().order_by("-uploaded_at")
         data = []
         for r in resumes:
