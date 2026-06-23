@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { HelpCircle, ChevronDown, ChevronUp, BookOpen, User, Briefcase, CheckCircle, Sparkles, AlertCircle, ArrowUpRight } from 'lucide-react';
 import { evaluateAnswer } from '../api/resumeApi';
 
-function QuestionPanel({ questions = [], savedAnswers = {}, savedFeedbacks = {}, onSaveQA }) {
+function QuestionPanel({ questions = [], savedAnswers, savedFeedbacks, onSaveQA }) {
   const [openIndex, setOpenIndex] = useState(null);
   const [answers, setAnswers] = useState({});
   const [submittedAnswers, setSubmittedAnswers] = useState({});
