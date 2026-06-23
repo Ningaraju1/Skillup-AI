@@ -149,6 +149,7 @@ function ResumeReport() {
 
       {/* 4. Interview Coaching Questions */}
       <QuestionPanel 
+        key={report.id}
         questions={report.questions}
         savedAnswers={report.practice_answers}
         savedFeedbacks={report.practice_feedbacks}

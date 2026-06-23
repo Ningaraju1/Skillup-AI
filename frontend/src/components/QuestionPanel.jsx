@@ -2,24 +2,11 @@ import React, { useState } from 'react';
 import { HelpCircle, ChevronDown, ChevronUp, BookOpen, User, Briefcase, CheckCircle, Sparkles, AlertCircle, ArrowUpRight } from 'lucide-react';
 import { evaluateAnswer } from '../api/resumeApi';
 
-function QuestionPanel({ questions = [], savedAnswers, savedFeedbacks, onSaveQA }) {
+function QuestionPanel({ questions = [], savedAnswers = {}, savedFeedbacks = {}, onSaveQA }) {
   const [openIndex, setOpenIndex] = useState(null);
   const [answers, setAnswers] = useState({});
-  const [submittedAnswers, setSubmittedAnswers] = useState({});
-  const [feedbacks, setFeedbacks] = useState({});
+  const [editingIndices, setEditingIndices] = useState({});
   const [loadingFeedbacks, setLoadingFeedbacks] = useState({});
-
-  React.useEffect(() => {
-    setAnswers(savedAnswers || {});
-    setFeedbacks(savedFeedbacks || {});
-    const subs = {};
-    Object.keys(savedAnswers || {}).forEach(key => {
-      if (savedAnswers[key]?.trim()) {
-        subs[key] = true;
-      }
-    });
-    setSubmittedAnswers(subs);
-  }, [savedAnswers, savedFeedbacks]);
 
   const toggleAccordion = (idx) => {
     setOpenIndex(openIndex === idx ? null : idx);
@@ -30,20 +17,20 @@ function QuestionPanel({ questions = [], savedAnswers, savedFeedbacks, onSaveQA 
   };
 
   const submitAnswer = (idx) => {
-    setSubmittedAnswers(prev => ({ ...prev, [idx]: true }));
+    const currentText = answers[idx] !== undefined ? answers[idx] : (savedAnswers[idx] || '');
     if (onSaveQA) {
-      onSaveQA({ ...answers, [idx]: answers[idx] }, feedbacks);
+      onSaveQA({ ...savedAnswers, [idx]: currentText }, savedFeedbacks);
     }
+    setEditingIndices(prev => ({ ...prev, [idx]: false }));
   };
 
-  const handleGetFeedback = async (idx, question, answer, type) => {
+  const handleGetFeedback = async (idx, question, type) => {
+    const currentText = answers[idx] !== undefined ? answers[idx] : (savedAnswers[idx] || '');
     setLoadingFeedbacks(prev => ({ ...prev, [idx]: true }));
     try {
-      const result = await evaluateAnswer(question, answer, type);
-      const nextFeedbacks = { ...feedbacks, [idx]: result };
-      setFeedbacks(nextFeedbacks);
+      const result = await evaluateAnswer(question, currentText, type);
       if (onSaveQA) {
-        onSaveQA(answers, nextFeedbacks);
+        onSaveQA(savedAnswers, { ...savedFeedbacks, [idx]: result });
       }
     } catch (err) {
       console.error("AI Coach evaluation failed:", err);
@@ -103,7 +90,11 @@ function QuestionPanel({ questions = [], savedAnswers, savedFeedbacks, onSaveQA 
           questions.map((q, idx) => {
             const isOpen = openIndex === idx;
             const badge = getTypeBadgeStyle(q.type);
-            const isSubmitted = submittedAnswers[idx];
+            const hasSaved = !!savedAnswers?.[idx];
+            const isEditing = !!editingIndices[idx];
+            const isSubmitted = hasSaved && !isEditing;
+
+            const currentVal = answers[idx] !== undefined ? answers[idx] : (savedAnswers?.[idx] || '');
 
             return (
               <div 
@@ -174,7 +165,7 @@ function QuestionPanel({ questions = [], savedAnswers, savedFeedbacks, onSaveQA 
                       {!isSubmitted ? (
                         <div>
                           <textarea 
-                            value={answers[idx] || ''}
+                            value={currentVal}
                             onChange={(e) => handleAnswerChange(idx, e.target.value)}
                             placeholder="Type your response here..."
                             rows="4"
@@ -194,7 +185,7 @@ function QuestionPanel({ questions = [], savedAnswers, savedFeedbacks, onSaveQA 
                           />
                           <button 
                             onClick={() => submitAnswer(idx)}
-                            disabled={!answers[idx]?.trim()}
+                            disabled={!currentVal.trim()}
                             className="btn btn-secondary"
                             style={{ padding: '8px 16px', fontSize: '0.8rem', borderRadius: '6px' }}
                           >
@@ -214,10 +205,10 @@ function QuestionPanel({ questions = [], savedAnswers, savedFeedbacks, onSaveQA 
                               <span>Saved Response</span>
                             </div>
                             <p style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap', color: 'var(--text-primary)', margin: '0 0 10px 0' }}>
-                              {answers[idx]}
+                              {savedAnswers?.[idx]}
                             </p>
                             <button 
-                              onClick={() => setSubmittedAnswers(prev => ({ ...prev, [idx]: false }))}
+                              onClick={() => setEditingIndices(prev => ({ ...prev, [idx]: true }))}
                               style={{
                                 background: 'none',
                                 border: 'none',
@@ -233,9 +224,9 @@ function QuestionPanel({ questions = [], savedAnswers, savedFeedbacks, onSaveQA 
                           </div>
 
                           {/* AI COACH FEEDBACK AREA */}
-                          {!feedbacks[idx] ? (
+                          {!savedFeedbacks?.[idx] ? (
                             <button
-                              onClick={() => handleGetFeedback(idx, q.question, answers[idx], q.type)}
+                              onClick={() => handleGetFeedback(idx, q.question, q.type)}
                               disabled={loadingFeedbacks[idx]}
                               className="btn btn-primary"
                               style={{
@@ -264,10 +255,10 @@ function QuestionPanel({ questions = [], savedAnswers, savedFeedbacks, onSaveQA 
                             </button>
                           ) : (
                             <div className="glass-card animate-fade-in" style={{
-                              padding: '20px',
-                              border: '1px solid rgba(168, 85, 247, 0.2)',
-                              backgroundColor: 'rgba(168, 85, 247, 0.02)'
-                            }}>
+                                padding: '20px',
+                                border: '1px solid rgba(168, 85, 247, 0.2)',
+                                backgroundColor: 'rgba(168, 85, 247, 0.02)'
+                              }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '10px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-secondary)', fontWeight: '700', fontSize: '0.9rem' }}>
                                   <Sparkles size={16} />
@@ -278,12 +269,12 @@ function QuestionPanel({ questions = [], savedAnswers, savedFeedbacks, onSaveQA 
                                   borderRadius: '20px',
                                   fontSize: '0.8rem',
                                   fontWeight: '800',
-                                  backgroundColor: feedbacks[idx].score >= 80 ? 'rgba(16, 185, 129, 0.15)' :
-                                                   feedbacks[idx].score >= 50 ? 'rgba(234, 179, 8, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                                  color: feedbacks[idx].score >= 80 ? 'var(--color-success)' :
-                                         feedbacks[idx].score >= 50 ? 'var(--color-warning)' : 'var(--color-danger)'
+                                  backgroundColor: savedFeedbacks[idx].score >= 80 ? 'rgba(16, 185, 129, 0.15)' :
+                                                   savedFeedbacks[idx].score >= 50 ? 'rgba(234, 179, 8, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                                  color: savedFeedbacks[idx].score >= 80 ? 'var(--color-success)' :
+                                         savedFeedbacks[idx].score >= 50 ? 'var(--color-warning)' : 'var(--color-danger)'
                                 }}>
-                                  Match Score: {feedbacks[idx].score}%
+                                  Match Score: {savedFeedbacks[idx].score}%
                                 </span>
                               </div>
 
@@ -294,7 +285,7 @@ function QuestionPanel({ questions = [], savedAnswers, savedFeedbacks, onSaveQA 
                                     ✓ Key Strengths
                                   </span>
                                   <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.825rem', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                    {feedbacks[idx].strengths?.map((str, sIdx) => (
+                                    {savedFeedbacks[idx].strengths?.map((str, sIdx) => (
                                       <li key={sIdx}>{str}</li>
                                     ))}
                                   </ul>
@@ -306,7 +297,7 @@ function QuestionPanel({ questions = [], savedAnswers, savedFeedbacks, onSaveQA 
                                     ⚠ Areas for Improvement
                                   </span>
                                   <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.825rem', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                    {feedbacks[idx].improvements?.map((imp, iIdx) => (
+                                    {savedFeedbacks[idx].improvements?.map((imp, iIdx) => (
                                       <li key={iIdx}>{imp}</li>
                                     ))}
                                   </ul>
@@ -323,17 +314,16 @@ function QuestionPanel({ questions = [], savedAnswers, savedFeedbacks, onSaveQA 
                                     ★ Recommended Response Refinement
                                   </span>
                                   <p style={{ fontSize: '0.825rem', lineHeight: '1.4', margin: 0, whiteSpace: 'pre-wrap', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                                    "{feedbacks[idx].model_answer}"
+                                    "{savedFeedbacks[idx].model_answer}"
                                   </p>
                                 </div>
 
                                 <button
                                   onClick={() => {
-                                    const nextFeedbacks = { ...feedbacks };
+                                    const nextFeedbacks = { ...savedFeedbacks };
                                     delete nextFeedbacks[idx];
-                                    setFeedbacks(nextFeedbacks);
                                     if (onSaveQA) {
-                                      onSaveQA(answers, nextFeedbacks);
+                                      onSaveQA(savedAnswers, nextFeedbacks);
                                     }
                                   }}
                                   style={{
