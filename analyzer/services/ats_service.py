@@ -52,8 +52,10 @@ RULES:
 - No explanation
 - No extra text
 - Be strict, realistic, and highly selective.
-- "matched_skills" MUST ONLY contain technical skills from the Resume that are directly relevant, required, or mentioned in the Job Description. DO NOT include general web development or unrelated skills (such as React, Django, HTML, CSS, JS, SQL) in "matched_skills" if the Job Description focuses on a completely different domain (like LLMs, AI, machine learning, data science, etc.) unless the job description explicitly requires them.
-- "missing_skills" MUST contain the core technologies, skills, or conceptual frameworks mentioned or implied by the Job Description that are missing from the Resume.
+- **IMPLICIT ECOSYSTEM EXPANSION**: If the target Job Description is very short, a single technology, a framework name, or a brief role (e.g., "django", "llm", "react", "python developer"), you MUST first implicitly expand it to its standard professional stack and associated tools, concepts, and skills (for example: if 'django' is provided, expand it to include 'Django REST Framework', 'RESTful APIs', 'Python', 'Databases/PostgreSQL/MySQL/SQLite', 'ORM', 'Celery', 'Redis', etc.; if 'llm' is provided, expand it to include 'Large Language Models', 'NLP', 'PyTorch/TensorFlow', 'LangChain', 'LlamaIndex', 'Vector Databases (Chroma/Pinecone/Milvus)', 'RAG', etc.).
+- "matched_skills" MUST ONLY contain technical skills from the Resume that are directly relevant, required, mentioned, or implicitly associated with the Job Description (including its expanded ecosystem/associated skills if the input is short/minimal). DO NOT include general web development or unrelated skills (such as React, Django, HTML, CSS, JS, SQL) in "matched_skills" if the Job Description focuses on a completely different domain (like LLMs, AI, machine learning, data science, etc.) unless the job description explicitly requires them.
+- "missing_skills" MUST contain the core technologies, skills, or conceptual frameworks mentioned in or associated/implied by the Job Description (including its expanded ecosystem/associated skills if the input is short/minimal) that are missing from the Resume.
+- Ensure the `ats_score` and `recommendations` are calculated based on the comparison of the resume to this full expanded ecosystem.
 
 OUTPUT FORMAT:
 {{

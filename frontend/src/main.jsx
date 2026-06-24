@@ -10,7 +10,7 @@ if (loader) {
     loader.style.opacity = '0';
     setTimeout(() => {
       loader.remove();
-    }, 400); // matches transition speed
+    }, 300); // matches transition speed
   }, 3000); // 3 seconds delay
 }
 
