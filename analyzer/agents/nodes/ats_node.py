@@ -13,6 +13,7 @@ def ats_node(state):
             "ats_score": result.get("ats_score", 0),
             "matched_skills": result.get("matched_skills", []),
             "missing_skills": result.get("missing_skills", []),
+            "associated_skills": result.get("associated_skills", []),
             "recommendations": result.get("recommendations", [])
         }
     }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { CheckCircle2, AlertTriangle, Search, Filter } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Search, Filter, Sparkles, Check } from 'lucide-react';
 
-function SkillRadar({ matchedSkills = [], missingSkills = [] }) {
+function SkillRadar({ matchedSkills = [], missingSkills = [], associatedSkills = [] }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all'); // all, matched, missing
 
@@ -222,6 +222,90 @@ function SkillRadar({ matchedSkills = [], missingSkills = [] }) {
           </div>
         )}
       </div>
+
+      {/* Target Ecosystem / Associated Skills Section */}
+      {associatedSkills && associatedSkills.length > 0 && (
+        <div style={{
+          marginTop: '28px',
+          background: 'rgba(168, 85, 247, 0.02)',
+          border: '1px solid rgba(168, 85, 247, 0.08)',
+          borderRadius: '12px',
+          padding: '24px'
+        }} className="animate-fade-in">
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '16px',
+            borderBottom: '1px solid var(--border-glass)',
+            paddingBottom: '12px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Sparkles size={18} style={{ color: '#a855f7' }} />
+              <h4 style={{ margin: 0, fontSize: '1.05rem', color: '#a855f7', fontWeight: '700' }}>
+                Associated Stack / Ecosystem Skills ({associatedSkills.length})
+              </h4>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              Expected skills for your target job description
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            {associatedSkills.map((skill, index) => {
+              // Check if candidate matched this skill
+              const isMatched = (matchedSkills || []).some(
+                ms => ms.toLowerCase().trim() === skill.toLowerCase().trim()
+              );
+
+              return (
+                <div
+                  key={index}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    fontSize: '0.85rem',
+                    fontWeight: '500',
+                    backgroundColor: isMatched ? 'rgba(16, 185, 129, 0.06)' : 'rgba(255, 255, 255, 0.02)',
+                    border: isMatched 
+                      ? '1px solid rgba(16, 185, 129, 0.25)' 
+                      : '1px dotted rgba(255, 255, 255, 0.15)',
+                    color: isMatched ? '#6ee7b7' : 'rgba(255, 255, 255, 0.6)',
+                    transition: 'transform 0.15s, border-color 0.15s',
+                    cursor: 'default'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                    if (isMatched) {
+                      e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                    } else {
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    if (isMatched) {
+                      e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.25)';
+                    } else {
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                    }
+                  }}
+                >
+                  {isMatched ? (
+                    <Check size={12} style={{ color: '#10b981' }} />
+                  ) : (
+                    <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--text-muted)' }}></span>
+                  )}
+                  {skill}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

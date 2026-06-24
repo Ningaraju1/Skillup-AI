@@ -65,11 +65,12 @@ export const uploadResume = async (file, jobDescription) => {
     fileName: file.name,
     jobDescription: jobDescription,
     skills: result.skills || [],
-    ats_result: result.ats_result || {
-      ats_score: 0,
-      matched_skills: [],
-      missing_skills: [],
-      recommendations: []
+    ats_result: {
+      ats_score: result.ats_result?.ats_score || 0,
+      matched_skills: result.ats_result?.matched_skills || [],
+      missing_skills: result.ats_result?.missing_skills || [],
+      associated_skills: result.ats_result?.associated_skills || [],
+      recommendations: result.ats_result?.recommendations || []
     },
     career_intelligence: result.career_intelligence || {
       career_score: 0,

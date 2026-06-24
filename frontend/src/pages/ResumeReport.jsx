@@ -138,6 +138,7 @@ function ResumeReport() {
       <SkillRadar 
         matchedSkills={report.ats_result?.matched_skills}
         missingSkills={report.ats_result?.missing_skills}
+        associatedSkills={report.ats_result?.associated_skills}
       />
 
       {/* 3. Career pathways and actionable optimizations */}
