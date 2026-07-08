@@ -9,4 +9,4 @@ sentence-transformers>=2.2
 chromadb>=0.4
 langgraph>=0.1
 gunicorn>=21.0
-
+requests>=2.31
