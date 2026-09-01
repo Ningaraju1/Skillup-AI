@@ -6,7 +6,6 @@ ENV/
 
 # Sensitive files
 .env
-.env.*
 
 # Databases
 db.sqlite3
