@@ -76,8 +76,10 @@ Job Description:
     response = client.chat.completions.create(
         model=model_name,
         messages=[
+            {"role": "system", "content": "You are a JSON-only response bot. Always return valid JSON."},
             {"role": "user", "content": prompt}
         ],
+        response_format={"type": "json_object"},
         temperature=0.4
     )
 
