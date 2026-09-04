@@ -120,92 +120,104 @@ class ResumeUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # -------------------------
-        # SAVE RESUME
-        # -------------------------
-        resume = Resume.objects.create(resume_file=file)
+        try:
+            # -------------------------
+            # SAVE RESUME
+            # -------------------------
+            resume = Resume.objects.create(resume_file=file)
 
-        # -------------------------
-        # EXTRACT TEXT
-        # -------------------------
-        resume_text = extract_text(resume.resume_file.path)
+            # -------------------------
+            # EXTRACT TEXT
+            # -------------------------
+            resume_text = extract_text(resume.resume_file.path)
 
-        # -------------------------
-        # LANGGRAPH PIPELINE
-        # -------------------------
-        graph = build_graph()
+            # -------------------------
+            # LANGGRAPH PIPELINE
+            # -------------------------
+            graph = build_graph()
 
-        result = graph.invoke({
-            "resume_text": resume_text,
-            "job_description": job_description,
-            "skills": [],
-            "ats_result": {},
-            "improvements": [],
-            "questions": []
-        })
+            result = graph.invoke({
+                "resume_text": resume_text,
+                "job_description": job_description,
+                "skills": [],
+                "ats_result": {},
+                "improvements": [],
+                "questions": []
+            })
 
-        # -------------------------
-        # SAFE EXTRACTION
-        # -------------------------
-        skills = result.get("skills", []) or []
-        ats_result = result.get("ats_result") or {}
+            # -------------------------
+            # SAFE EXTRACTION
+            # -------------------------
+            skills = result.get("skills", []) or []
+            ats_result = result.get("ats_result") or {}
 
-        improvements = result.get("improvements", []) or []
-        questions = result.get("questions", []) or []
+            improvements = result.get("improvements", []) or []
+            questions = result.get("questions", []) or []
 
-        # -------------------------
-        # EMBEDDINGS
-        # -------------------------
-        resume_emb = get_embedding(resume_text)
-        job_emb = get_embedding(job_description)
+            # -------------------------
+            # EMBEDDINGS
+            # -------------------------
+            resume_emb = get_embedding(resume_text)
+            job_emb = get_embedding(job_description)
 
-        career_score, skill_gap_score, job_fit_label, category, career_path = compute_intelligence(
-            resume_emb,
-            job_emb,
-            skills
-        )
+            career_score, skill_gap_score, job_fit_label, category, career_path = compute_intelligence(
+                resume_emb,
+                job_emb,
+                skills
+            )
 
-        # -------------------------
-        # SAVE DB
-        # -------------------------
-        resume.skills = skills
-        resume.ats_score = ats_result.get("ats_score", 0)
-        resume.improvements = improvements
-        resume.save()
+            # -------------------------
+            # SAVE DB
+            # -------------------------
+            resume.skills = skills
+            resume.ats_score = ats_result.get("ats_score", 0)
+            resume.improvements = improvements
+            resume.save()
 
-        # -------------------------
-        # VECTOR STORE (V9 MEMORY LAYER)
-        # -------------------------
-        store_resume_embedding(
-            resume_id=resume.id,
-            embedding=resume_emb,
-            ats_result=ats_result,
-            career_score=career_score,
-            skill_gap_score=skill_gap_score,
-            job_fit_label=job_fit_label,
-            career_direction=career_path
-        )
+            # -------------------------
+            # VECTOR STORE (V9 MEMORY LAYER)
+            # -------------------------
+            try:
+                store_resume_embedding(
+                    resume_id=resume.id,
+                    embedding=resume_emb,
+                    ats_result=ats_result,
+                    career_score=career_score,
+                    skill_gap_score=skill_gap_score,
+                    job_fit_label=job_fit_label,
+                    career_direction=career_path
+                )
+            except Exception:
+                pass  # Vector store is non-critical, don't fail the request
 
-        # -------------------------
-        # RESPONSE (V9 SAAS OUTPUT)
-        # -------------------------
-        return Response({
-            "resume_id": resume.id,
+            # -------------------------
+            # RESPONSE (V9 SAAS OUTPUT)
+            # -------------------------
+            return Response({
+                "resume_id": resume.id,
 
-            "skills": skills,
-            "ats_result": ats_result,
+                "skills": skills,
+                "ats_result": ats_result,
 
-            "career_intelligence": {
-                "career_score": career_score,
-                "skill_gap_score": skill_gap_score,
-                "job_fit_label": job_fit_label,
-                "category": category,
-                "career_path": career_path
-            },
+                "career_intelligence": {
+                    "career_score": career_score,
+                    "skill_gap_score": skill_gap_score,
+                    "job_fit_label": job_fit_label,
+                    "category": category,
+                    "career_path": career_path
+                },
 
-            "improvements": improvements,
-            "questions": questions
-        }, status=status.HTTP_200_OK)
+                "improvements": improvements,
+                "questions": questions
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return Response(
+                {"error": f"Resume analysis failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 # -------------------------
@@ -224,9 +236,16 @@ class InterviewAnswerEvaluateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        feedback = evaluate_interview_answer(question, answer, q_type)
-
-        return Response(feedback, status=status.HTTP_200_OK)
+        try:
+            feedback = evaluate_interview_answer(question, answer, q_type)
+            return Response(feedback, status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return Response(
+                {"error": f"Answer evaluation failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 # -------------------------
