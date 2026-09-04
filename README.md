@@ -112,11 +112,11 @@ graph TD
 | Stage | Node / Tool | Description | Model/Engine |
 |:---|:---:|:---|:---|
 | **Parsing** | `pdf_parser` | Safely extracts text from pdf, docx, doc | `pypdf`, `python-docx`, raw binary streams |
-| **Extraction** | `skill_extractor` | Extracts technical skills from CV | Groq `llama-3.3-70b-versatile` |
-| **Analysis** | `ats_analyzer` | Matches CV keywords against Job Requirements | Groq `llama-3.3-70b-versatile` |
-| **Scoring** | `cosine_similarity` | Computes mathematical distance embeddings | `all-MiniLM-L6-v2` |
-| **Optimization** | `improvement_generator` | Generates CV structure & content improvements | Groq `llama-3.3-70b-versatile` |
-| **Preparation** | `interview_generator` | Tailors custom interview prep guides | Groq `llama-3.3-70b-versatile` |
+| **Extraction** | `skill_extractor` | Extracts technical skills from CV | Groq `openai/gpt-oss-120b` |
+| **Analysis** | `ats_analyzer` | Matches CV keywords against Job Requirements | Groq `openai/gpt-oss-120b` |
+| **Storage** | `vector_store` | Embeds & persists skill profiles for RAG retrieval | ChromaDB |
+| **Optimization** | `improvement_generator` | Generates CV structure & content improvements | Groq `openai/gpt-oss-120b` |
+| **Preparation** | `interview_generator` | Tailors custom interview prep guides | Groq `openai/gpt-oss-120b` |
 | **Memory** | `career_memory` | Indexes data to vector database for tracking | `ChromaDB` Persistent Store |
 
 ---
