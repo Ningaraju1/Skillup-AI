@@ -12,6 +12,39 @@ client = Groq(
 
 
 # -----------------------------
+# TRIVIAL / NOISE SKILLS FILTER
+# -----------------------------
+NOISE_KEYWORDS = {
+    "pip", "venv", "virtualenv", "setuptools", "wheel", "sdist",
+    "standard library", "standard library proficiency", "debugging", "debugging tools",
+    "logging", "logging frameworks", "requirements.txt", "pipenv"
+}
+
+
+def sanitize_skill(skill: str) -> str:
+    """Clean parentheses and extra tags like (explicit), (implied)"""
+    cleaned = re.sub(r"\s*\((?:explicit|implied|core|basic|advanced|optional)\)", "", skill, flags=re.IGNORECASE).strip()
+    return cleaned
+
+
+def filter_skills(skills: list) -> list:
+    cleaned = []
+    seen = set()
+    for s in skills:
+        if not isinstance(s, str):
+            continue
+        clean_name = sanitize_skill(s)
+        if not clean_name:
+            continue
+        if clean_name.lower() in NOISE_KEYWORDS:
+            continue
+        if clean_name.lower() not in seen:
+            seen.add(clean_name.lower())
+            cleaned.append(clean_name)
+    return cleaned
+
+
+# -----------------------------
 # CLEAN JSON FUNCTION
 # -----------------------------
 def clean_json(text: str):
@@ -19,15 +52,25 @@ def clean_json(text: str):
     Converts LLM output into valid Python dict.
     Removes markdown and handles parsing safely.
     """
-
-    # Remove markdown wrappers
     text = re.sub(r"```json", "", text)
     text = re.sub(r"```", "", text)
-
     text = text.strip()
 
+    # Extract JSON substring if surrounded by other text
+    match = re.search(r"\{[\s\S]*\}", text)
+    if match:
+        text = match.group(0)
+
     try:
-        return json.loads(text)
+        data = json.loads(text)
+        if isinstance(data, dict):
+            if "matched_skills" in data and isinstance(data["matched_skills"], list):
+                data["matched_skills"] = filter_skills(data["matched_skills"])
+            if "missing_skills" in data and isinstance(data["missing_skills"], list):
+                data["missing_skills"] = filter_skills(data["missing_skills"])
+            if "associated_skills" in data and isinstance(data["associated_skills"], list):
+                data["associated_skills"] = filter_skills(data["associated_skills"])
+        return data
     except Exception:
         return {
             "error": "Invalid JSON from model",
@@ -41,30 +84,27 @@ def clean_json(text: str):
 def calculate_ats_score(resume_text, job_description):
 
     prompt = f"""
-You are an expert ATS (Applicant Tracking System) evaluator.
+You are an elite ATS (Applicant Tracking System) recruiter and technical auditor.
 
 TASK:
-Compare the resume with the job description and evaluate how well they match.
+Compare the candidate's resume with the job description to calculate ATS compatibility, identify matched skills, missing essential skills, and actionable recommendations.
 
-RULES:
-- Return ONLY valid JSON
-- No markdown
-- No explanation
-- No extra text
-- Be strict, realistic, and highly selective.
-- **IMPLICIT ECOSYSTEM EXPANSION**: If the target Job Description is very short, a single technology, a framework name, or a brief role (e.g., "django", "llm", "react", "python developer"), you MUST first implicitly expand it to its standard professional stack and associated tools, concepts, and skills (for example: if 'django' is provided, expand it to include 'Django REST Framework', 'RESTful APIs', 'Python', 'Databases/PostgreSQL/MySQL/SQLite', 'ORM', 'Celery', 'Redis', etc.; if 'llm' is provided, expand it to include 'Large Language Models', 'NLP', 'PyTorch/TensorFlow', 'LangChain', 'LlamaIndex', 'Vector Databases (Chroma/Pinecone/Milvus)', 'RAG', etc.).
-- "matched_skills" MUST ONLY contain technical skills from the Resume that are directly relevant, required, mentioned, or implicitly associated with the Job Description (including its expanded ecosystem/associated skills if the input is short/minimal). DO NOT include general web development or unrelated skills (such as React, Django, HTML, CSS, JS, SQL) in "matched_skills" if the Job Description focuses on a completely different domain (like LLMs, AI, machine learning, data science, etc.) unless the job description explicitly requires them.
-- "missing_skills" MUST contain the core technologies, skills, or conceptual frameworks mentioned in or associated/implied by the Job Description (including its expanded ecosystem/associated skills if the input is short/minimal) that are missing from the Resume.
-- "associated_skills" MUST contain a comprehensive list of all the technical stack skills, libraries, frameworks, tools, or concepts associated with or expected for the target job description or technology stack (e.g. for "django", it should be things like Django REST Framework, RESTful APIs, Databases/PostgreSQL/MySQL/SQLite, ORM, Celery, Redis, Python, etc. For any other technology or role, list the standard ecosystem/associated skills). This list is the target ecosystem/stack definition itself.
-- Ensure the `ats_score` and `recommendations` are calculated based on the comparison of the resume to this full expanded ecosystem.
+CRITICAL GUIDELINES FOR SKILLS:
+- Use standard, clean industry names (e.g., "Docker", "PostgreSQL", "Celery", "Redis", "Django REST Framework", "PyTorch", "Kubernetes", "CI/CD").
+- NEVER include trivial or generic developer utilities (e.g., do NOT include "pip", "venv", "virtualenv", "setuptools", "Standard Library", "wheel", "debugging tools", "logging frameworks", "requirements.txt").
+- NEVER add parenthetical tags like "(explicit)", "(implied)", "(basic)" to skill names.
+- "matched_skills": Technical skills present in the resume that are directly relevant to the target role/job description.
+- "missing_skills": The top 5 to 10 high-value technologies, frameworks, and architecture concepts expected for the role that are absent from the resume.
+- "associated_skills": The standard technical stack skills for this role profile.
+- "recommendations": Concrete, high-impact bullet points to improve the resume for this role.
 
 OUTPUT FORMAT:
 {{
     "ats_score": 0-100,
-    "matched_skills": [],
-    "missing_skills": [],
-    "associated_skills": [],
-    "recommendations": []
+    "matched_skills": ["Clean Skill Name"],
+    "missing_skills": ["Clean Skill Name"],
+    "associated_skills": ["Clean Skill Name"],
+    "recommendations": ["Actionable recommendation"]
 }}
 
 Resume:
@@ -78,8 +118,10 @@ Job Description:
     response = client.chat.completions.create(
         model=model_name,
         messages=[
+            {"role": "system", "content": "You are a professional ATS system. Always return clean valid JSON."},
             {"role": "user", "content": prompt}
         ],
+        response_format={"type": "json_object"},
         temperature=0.2
     )
 
