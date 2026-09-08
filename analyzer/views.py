@@ -1,3 +1,10 @@
+"""
+SkillUp AI — Views (v2 Synchronous)
+=====================================
+All resume intelligence is generated via the unified mega-prompt in ~3-5 seconds.
+Direct synchronous execution — zero Celery or Redis dependencies required.
+"""
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,107 +17,81 @@ from analyzer.memory.embedding import get_embedding
 from analyzer.memory.vector_store import store_resume_embedding
 from analyzer.services.ai_service import evaluate_interview_answer
 
-import math
-import re
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 
-# -------------------------
-# COSINE SIMILARITY ENGINE (V9)
-# -------------------------
-def cosine_similarity(a, b):
-    dot = sum(x * y for x, y in zip(a, b))
-    norm_a = math.sqrt(sum(x * x for x in a))
-    norm_b = math.sqrt(sum(x * x for x in b))
-    return dot / (norm_a * norm_b + 1e-9)
+# ─────────────────────────────────────────────
+# Helper: Run unified pipeline inline
+# ─────────────────────────────────────────────
+def _run_pipeline_sync(resume_text: str, job_description: str) -> dict:
+    """
+    Runs the LangGraph unified pipeline inline.
+    Executes Groq mega-prompt, Pydantic validation, and noise filtering.
+    """
+    graph = build_graph()
+    return graph.invoke({
+        "resume_text": resume_text,
+        "job_description": job_description,
+        "skills": [],
+        "ats_result": {},
+        "career_intelligence": {},
+        "improvements": [],
+        "questions": [],
+        "executive_summary": "",
+        "cover_letter": "",
+        "status": "processing",
+    })
 
 
-# -------------------------
-# SKILL CATEGORY ENGINE (V9)
-# -------------------------
-def detect_category(skills: list):
+# ─────────────────────────────────────────────
+# Helper: Build API response from pipeline result
+# ─────────────────────────────────────────────
+def _build_response(result: dict, resume_id: int) -> dict:
+    """
+    Extracts and structures the unified pipeline result
+    into the API response format the frontend expects.
+    """
+    skills = result.get("skills", []) or []
+    ats_result = result.get("ats_result") or {}
+    career_intel = result.get("career_intelligence") or {}
+    improvements = result.get("improvements", []) or []
+    questions = result.get("questions", []) or []
+    executive_summary = result.get("executive_summary", "") or ""
+    cover_letter = result.get("cover_letter", "") or ""
+    pipeline_status = result.get("status", "ok")
 
-    skill_text = " ".join([s.lower() for s in skills])
-
-    if any(x in skill_text for x in ["pytorch", "tensorflow", "nlp", "llm", "transformer", "opencv"]):
-        return "ai_ml"
-
-    if any(x in skill_text for x in ["pandas", "numpy", "sql", "power bi", "excel", "tableau"]):
-        return "data_science"
-
-    if any(x in skill_text for x in ["testing", "qa", "selenium", "cypress", "playwright", "junit", "testng", "sdet", "postman", "jmeter"]):
-        return "software_testing"
-
-    if any(x in skill_text for x in ["django", "fastapi", "node", "api", "springboot", "spring boot", "mern", "mean", "spring framework", "hibernate", "jpa", "express", "express.js"]) or bool(re.search(r'\bjava\b', skill_text)):
-        return "backend"
-
-    if any(x in skill_text for x in ["react", "html", "css", "javascript", "nextjs", "next.js", "wordpress", "angular", "angularjs"]):
-        return "frontend"
-
-    if any(x in skill_text for x in ["aws", "docker", "kubernetes", "ci/cd", "gcp", "azure"]):
-        return "cloud_devops"
-
-    return "system_design"
-
-
-# -------------------------
-# CAREER PATH ENGINE (YOUR LOGIC PRESERVED + EXPANDED)
-# -------------------------
-def generate_career_path(category: str):
-
-    if category == "ai_ml":
-        return ["AI Engineer", "Machine Learning Engineer", "Data Scientist"]
-
-    elif category == "data_science":
-        return ["Data Analyst", "Data Scientist", "Business Analyst"]
-
-    elif category == "software_testing":
-        return ["QA Engineer", "Software Development Engineer in Test (SDET)", "Automation Test Engineer"]
-
-    elif category == "backend":
-        return ["Backend Developer", "Full Stack Developer", "API Engineer"]
-
-    elif category == "frontend":
-        return ["Frontend Developer", "React Developer", "UI Engineer"]
-
-    elif category == "cloud_devops":
-        return ["DevOps Engineer", "Cloud Engineer", "Platform Engineer"]
-
-    elif category == "system_design":
-        return ["Software Engineer", "System Architect", "Backend Engineer"]
-
-    return ["Software Engineer"]
+    return {
+        "resume_id": resume_id,
+        "status": pipeline_status,
+        "executive_summary": executive_summary,
+        "skills": skills,
+        "ats_result": ats_result,
+        "career_intelligence": {
+            "career_score": career_intel.get("career_score",
+                            career_intel.get("job_compatibility_score", 0)),
+            "skill_gap_score": career_intel.get("skill_gap_score",
+                               round(100 - career_intel.get("career_score",
+                               career_intel.get("job_compatibility_score", 0)), 2)),
+            "job_fit_label": career_intel.get("job_fit_label", "Weak Fit"),
+            "category": career_intel.get("category", "General"),
+            "career_path": career_intel.get("career_path", []),
+            "trending_skills": career_intel.get("trending_skills", []),
+        },
+        "improvements": improvements,
+        "questions": questions,
+        "cover_letter": cover_letter,
+        "rag_metadata": result.get("rag_metadata", {}),
+    }
 
 
-# -------------------------
-# CAREER INTELLIGENCE ENGINE (V9)
-# -------------------------
-def compute_intelligence(resume_emb, job_emb, skills):
-
-    similarity = cosine_similarity(resume_emb, job_emb)
-
-    career_score = round(similarity * 100, 2)
-    skill_gap_score = round(100 - career_score, 2)
-
-    if career_score >= 75:
-        label = "Strong Fit"
-    elif career_score >= 50:
-        label = "Medium Fit"
-    else:
-        label = "Weak Fit"
-
-    category = detect_category(skills)
-    career_path = generate_career_path(category)
-
-    return career_score, skill_gap_score, label, category, career_path
-
-
-# -------------------------
-# API VIEW (V9 SAAS CORE)
-# -------------------------
+# ─────────────────────────────────────────────
+# UPLOAD VIEW
+# ─────────────────────────────────────────────
 class ResumeUploadView(APIView):
 
     def post(self, request):
-
         file = request.FILES.get("resume")
         job_description = request.data.get("job_description")
 
@@ -121,108 +102,72 @@ class ResumeUploadView(APIView):
             )
 
         try:
-            # -------------------------
-            # SAVE RESUME
-            # -------------------------
+            # Save resume file
             resume = Resume.objects.create(resume_file=file)
 
-            # -------------------------
-            # EXTRACT TEXT
-            # -------------------------
+            # Extract text from uploaded file
             resume_text = extract_text(resume.resume_file.path)
 
-            # -------------------------
-            # LANGGRAPH PIPELINE
-            # -------------------------
-            graph = build_graph()
+            # ── Direct Synchronous Execution ──
+            result = _run_pipeline_sync(resume_text, job_description)
 
-            result = graph.invoke({
-                "resume_text": resume_text,
-                "job_description": job_description,
-                "skills": [],
-                "ats_result": {},
-                "improvements": [],
-                "questions": []
-            })
-
-            # -------------------------
-            # SAFE EXTRACTION
-            # -------------------------
+            # Extract fields for DB storage
             skills = result.get("skills", []) or []
             ats_result = result.get("ats_result") or {}
-
             improvements = result.get("improvements", []) or []
-            questions = result.get("questions", []) or []
+            career_intel = result.get("career_intelligence") or {}
 
-            # -------------------------
-            # EMBEDDINGS
-            # -------------------------
-            resume_emb = get_embedding(resume_text)
-            job_emb = get_embedding(job_description)
-
-            career_score, skill_gap_score, job_fit_label, category, career_path = compute_intelligence(
-                resume_emb,
-                job_emb,
-                skills
-            )
-
-            # -------------------------
-            # SAVE DB
-            # -------------------------
+            # Save to DB
             resume.skills = skills
             resume.ats_score = ats_result.get("ats_score", 0)
             resume.improvements = improvements
             resume.save()
 
-            # -------------------------
-            # VECTOR STORE (V9 MEMORY LAYER)
-            # -------------------------
+            # Vector store (non-critical background indexing)
             try:
+                resume_emb = get_embedding(resume_text)
+                career_score = career_intel.get("career_score",
+                               career_intel.get("job_compatibility_score", 0))
                 store_resume_embedding(
                     resume_id=resume.id,
                     embedding=resume_emb,
                     ats_result=ats_result,
                     career_score=career_score,
-                    skill_gap_score=skill_gap_score,
-                    job_fit_label=job_fit_label,
-                    career_direction=career_path
+                    skill_gap_score=round(100 - career_score, 2),
+                    job_fit_label=career_intel.get("job_fit_label", "Unknown"),
+                    career_direction=career_intel.get("career_path", [])
                 )
             except Exception:
-                pass  # Vector store is non-critical, don't fail the request
+                pass  # Vector store is non-critical
 
-            # -------------------------
-            # RESPONSE (V9 SAAS OUTPUT)
-            # -------------------------
-            return Response({
-                "resume_id": resume.id,
-
-                "skills": skills,
-                "ats_result": ats_result,
-
-                "career_intelligence": {
-                    "career_score": career_score,
-                    "skill_gap_score": skill_gap_score,
-                    "job_fit_label": job_fit_label,
-                    "category": category,
-                    "career_path": career_path
-                },
-
-                "improvements": improvements,
-                "questions": questions
-            }, status=status.HTTP_200_OK)
+            return Response(
+                _build_response(result, resume.id),
+                status=status.HTTP_200_OK
+            )
 
         except Exception as e:
             import traceback
             traceback.print_exc()
+            logger.error("upload_failed", error=str(e)[:300])
             return Response(
                 {"error": f"Resume analysis failed: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
-# -------------------------
-# INTERVIEW EVALUATE API VIEW
-# -------------------------
+# ─────────────────────────────────────────────
+# STATUS VIEW (Legacy compatibility)
+# ─────────────────────────────────────────────
+class ResumeStatusView(APIView):
+    """Legacy endpoint returning completed status for backwards compatibility."""
+
+    def get(self, request, job_id):
+        return Response({"status": "ok", "job_id": job_id}, status=status.HTTP_200_OK)
+
+
+# ─────────────────────────────────────────────
+# INTERVIEW EVALUATE VIEW
+# ─────────────────────────────────────────────
 class InterviewAnswerEvaluateView(APIView):
 
     def post(self, request):
@@ -248,16 +193,19 @@ class InterviewAnswerEvaluateView(APIView):
             )
 
 
-# -------------------------
-# RESUME LIST API VIEW
-# -------------------------
+# ─────────────────────────────────────────────
+# RESUME LIST VIEW
+# ─────────────────────────────────────────────
 class ResumeListView(APIView):
 
     def get(self, request):
         action = request.query_params.get("action")
         if action == "clear":
             count, _ = Resume.objects.all().delete()
-            return Response({"message": f"Successfully deleted {count} records from database"}, status=status.HTTP_200_OK)
+            return Response(
+                {"message": f"Successfully deleted {count} records from database"},
+                status=status.HTTP_200_OK
+            )
 
         resumes = Resume.objects.all().order_by("-uploaded_at")
         data = []

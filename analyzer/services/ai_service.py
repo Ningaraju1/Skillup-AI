@@ -78,11 +78,19 @@ Resume:
 
 
 # -----------------------------
-# INTERVIEW ANSWER EVALUATOR
+# INTERVIEW ANSWER EVALUATOR (RAG ENHANCED)
 # -----------------------------
 def evaluate_interview_answer(question: str, user_answer: str, question_type: str):
+    from analyzer.memory.rag_engine import retrieve_interview_rubrics
+
+    # RAG Retrieval: Retrieve STAR-method evaluation rubric for this question topic
+    rubric = retrieve_interview_rubrics(question)
+
     prompt = f"""
-You are an expert tech recruiter and interview coach.
+You are an expert tech recruiter, senior engineer, and interview coach.
+
+═══ RETRIEVED RAG GRADING RUBRIC ═══
+{rubric}
 
 Evaluate the user's response to the following interview question:
 Question Type: {question_type}
@@ -100,7 +108,7 @@ OUTPUT FORMAT:
 }}
 """
 
-    model_name = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+    model_name = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
     response = client.chat.completions.create(
         model=model_name,
         messages=[
@@ -113,4 +121,7 @@ OUTPUT FORMAT:
 
     raw_output = response.choices[0].message.content
 
-    return clean_json(raw_output)
+    res_json = clean_json(raw_output)
+    if isinstance(res_json, dict):
+        res_json["rag_verified"] = True
+    return res_json

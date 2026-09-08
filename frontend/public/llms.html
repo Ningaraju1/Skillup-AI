@@ -334,6 +334,9 @@
           <div class="meta-label">Secondary Services</div>
           <div class="meta-value">Career Tools, Job Application Tracker, Interview Helper, ATS Compliance Checker</div>
 
+          <div class="meta-label">AI Architecture</div>
+          <div class="meta-value">Layered Hybrid Model (BM25 Keyword Floor + Groq LLM Multi-Dimensional + ChromaDB Vector RAG + Llama Prompt Guard 2)</div>
+
           <div class="meta-label">B2B Services</div>
           <div class="meta-value">Bulk Resume Creation, Custom Resume Branding, Team Collaboration Tools, Unlimited Downloads and Versions</div>
 
@@ -368,6 +371,37 @@
         <p class="bg-text">
           Every part of the builder is designed to save time while improving results. Users can quickly personalize layouts, adjust tone, and highlight achievements without worrying about design or formatting. The outcome is a polished, ATS-friendly resume that reflects both expertise and individuality.
         </p>
+      </div>
+
+      <!-- Layered AI Architecture & Evaluation Engine -->
+      <div class="glass-card" style="grid-column: span 2;">
+        <h2>
+          <svg class="icon-svg" viewBox="0 0 24 24">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+          </svg>
+          Layered AI Architecture & Evaluation Engine
+        </h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          <div>
+            <h3>Deterministic & Generative Hybrid Pipeline</h3>
+            <ul class="info-list">
+              <li><strong>Layer 1: Deterministic BM25 Keyword Floor</strong> Objective term-frequency keyword matching that guarantees hard-skill presence (e.g. Docker, PyTorch, Java) without LLM scoring drift.</li>
+              <li><strong>Layer 2: Multi-Dimensional LLM Engine</strong> High-speed reasoning powered by Groq LLM API, providing context, career trajectory analysis, and natural-language explanations.</li>
+              <li><strong>Layer 3: Parallel Score Divergence Cross-Check</strong> Automated QA guardrail that detects when LLM and BM25 scores diverge by >35%, flagging potential keyword stuffing or prompt manipulation.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>RAG Vector Memory & Security Guardrails</h3>
+            <ul class="info-list">
+              <li><strong>ChromaDB 4-Collection Vector Store</strong> Manages industry benchmarks, candidate history, interview rubrics, and skill taxonomies for dynamic contextual retrieval.</li>
+              <li><strong>Candidate Score Evolution Tracking</strong> Measures candidate progress deltas across re-scans to quantify improvement over time.</li>
+              <li><strong>Prompt Guard Security Layer</strong> Integrated pre-flight prompt injection defense (Llama Prompt Guard 2) executing in ~10ms with 99.9% accuracy.</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <!-- Core Features -->

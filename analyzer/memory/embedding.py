@@ -13,33 +13,23 @@ API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sent
 def get_embedding(text: str):
     """
     Retrieves a 384-dimensional embedding vector.
-    Prioritizes Hugging Face Serverless Inference API to keep memory footprint under 50MB.
-    Falls back to local SentenceTransformers if the API request fails.
+    Fast non-blocking lookup: tries Hugging Face API with 1.5s timeout.
+    Falls back to zero vector if unauthenticated or offline to prevent blocking web requests.
     """
     headers = {}
     if HF_TOKEN:
         headers["Authorization"] = f"Bearer {HF_TOKEN}"
 
     try:
-        response = requests.post(API_URL, headers=headers, json={"inputs": text}, timeout=8)
+        response = requests.post(API_URL, headers=headers, json={"inputs": text}, timeout=1.5)
         if response.status_code == 200:
             result = response.json()
-            # Ensure the API returned a list of floats
             if isinstance(result, list) and len(result) > 0:
-                # API sometimes returns nested lists depending on input format
                 if isinstance(result[0], list):
                     return result[0]
                 return result
     except Exception:
         pass
 
-    # Fallback: Lazy load local sentence transformers to avoid importing torch/transformers in production
-    try:
-        from sentence_transformers import SentenceTransformer
-        global _model
-        if '_model' not in globals():
-            _model = SentenceTransformer("all-MiniLM-L6-v2")
-        return _model.encode(text).tolist()
-    except Exception as e:
-        # Final fallback: Return zero vector of 384 dimensions
-        return [0.0] * 384
+    # Fast non-blocking fallback: Return 384-dimensional zero vector
+    return [0.0] * 384

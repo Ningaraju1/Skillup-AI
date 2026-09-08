@@ -9,7 +9,7 @@ function Upload() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [scanningStage, setScanningStage] = useState(0); // 0: upload, 1: parsing, 2: compliance, 3: mock prep
   const [error, setError] = useState('');
-  
+
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -77,11 +77,11 @@ function Upload() {
 
     try {
       const report = await uploadResume(file, jobDescription);
-      
+
       // Complete stages and navigate
       clearTimeout(timer1);
       clearTimeout(timer2);
-      
+
       setScanningStage(3);
       setTimeout(() => {
         setIsAnalyzing(false);
@@ -134,7 +134,7 @@ function Upload() {
 
           {/* Progress Timeline */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '320px', margin: '0 auto', textAlign: 'left' }}>
-            
+
             {/* Step 1: Text extraction */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', opacity: scanningStage >= 1 ? 1 : 0.4 }}>
               <span style={{
@@ -142,7 +142,7 @@ function Upload() {
                 backgroundColor: scanningStage === 1 ? 'var(--accent-primary)' : scanningStage > 1 ? 'var(--color-success)' : 'var(--text-muted)'
               }}></span>
               <span style={{ fontSize: '0.925rem', fontWeight: scanningStage === 1 ? '700' : '500' }}>
-                {scanningStage > 1 ? '✓ Extracted text from PDF' : 'Extracting text and keywords...'}
+                {scanningStage > 1 ? '✓ Analyzing  resume' : 'Extracting text and keywords...'}
               </span>
             </div>
 
@@ -206,15 +206,15 @@ function Upload() {
             <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '10px', letterSpacing: '0.05em' }}>
               Upload Resume (PDF, DOCX, DOC)
             </label>
-            <input 
-              type="file" 
+            <input
+              type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
               accept=".pdf,.docx,.doc"
               style={{ display: 'none' }}
             />
-            
-            <div 
+
+            <div
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onClick={triggerFileSelect}
@@ -248,7 +248,7 @@ function Upload() {
               }}>
                 <UploadCloud size={24} />
               </div>
-              
+
               {file ? (
                 <div>
                   <p style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
@@ -277,7 +277,7 @@ function Upload() {
             <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '10px', letterSpacing: '0.05em' }}>
               Target Job Description
             </label>
-            <textarea 
+            <textarea
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               placeholder="Paste the target job description requirements, skills, guidelines, or responsibilities here..."
@@ -303,8 +303,8 @@ function Upload() {
 
           {/* Submit Button */}
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn btn-primary"
               disabled={!file || !jobDescription.trim()}
               style={{ width: '100%', padding: '14px 28px' }}

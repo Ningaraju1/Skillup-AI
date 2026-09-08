@@ -5,6 +5,8 @@ import ScoreCard from '../components/ScoreCard';
 import SkillRadar from '../components/SkillRadar';
 import CareerPath from '../components/CareerPath';
 import QuestionPanel from '../components/QuestionPanel';
+import ExecutiveSummary from '../components/ExecutiveSummary';
+import CoverLetter from '../components/CoverLetter';
 import { ArrowLeft, FileText, Calendar, Sparkles, AlertCircle } from 'lucide-react';
 
 function ResumeReport() {
@@ -66,13 +68,13 @@ function ResumeReport() {
     <div className="animate-fade-in">
       {/* Back navigation link */}
       <div style={{ marginBottom: '24px' }}>
-        <Link 
-          to="/" 
-          style={{ 
-            color: 'var(--text-secondary)', 
-            textDecoration: 'none', 
-            display: 'inline-flex', 
-            alignItems: 'center', 
+        <Link
+          to="/"
+          style={{
+            color: 'var(--text-secondary)',
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
             gap: '6px',
             fontSize: '0.9rem',
             fontWeight: '600',
@@ -127,29 +129,36 @@ function ResumeReport() {
         </div>
       </div>
 
+      {/* 0. Executive Summary (RAG Ground-Truth Enhanced) */}
+      <ExecutiveSummary summary={report.executive_summary} ragMetadata={report.rag_metadata} />
+
       {/* 1. Score Cards */}
-      <ScoreCard 
+      <ScoreCard
         atsScore={report.ats_result?.ats_score}
         careerScore={report.career_intelligence?.career_score}
         fitLabel={report.career_intelligence?.job_fit_label}
       />
 
       {/* 2. Skill breakdown */}
-      <SkillRadar 
+      <SkillRadar
         matchedSkills={report.ats_result?.matched_skills}
         missingSkills={report.ats_result?.missing_skills}
         associatedSkills={report.ats_result?.associated_skills}
       />
 
       {/* 3. Career pathways and actionable optimizations */}
-      <CareerPath 
+      <CareerPath
         category={report.career_intelligence?.category}
         paths={report.career_intelligence?.career_path}
+        trendingSkills={report.career_intelligence?.trending_skills}
         improvements={report.improvements}
       />
 
-      {/* 4. Interview Coaching Questions */}
-      <QuestionPanel 
+      {/* 4. Cover Letter (NEW in v2) */}
+      <CoverLetter coverLetter={report.cover_letter} />
+
+      {/* 5. Interview Coaching Questions */}
+      <QuestionPanel
         key={report.id}
         questions={report.questions}
         savedAnswers={report.practice_answers}

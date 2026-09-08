@@ -1,48 +1,46 @@
 from typing import TypedDict, List, Dict, Any
 from langgraph.graph import StateGraph, END
 
-from analyzer.agents.nodes.skill_node import skill_node
-from analyzer.agents.nodes.ats_node import ats_node
-from analyzer.agents.nodes.improvement_node import improvement_node
-from analyzer.agents.nodes.interview_node import interview_node
+from analyzer.agents.nodes.unified_node import unified_analysis_node
 
 
 # -------------------------
-# STATE (V8.1 FULL STRUCTURE)
+# STATE (V2 UNIFIED)
 # -------------------------
 class ResumeState(TypedDict, total=False):
     resume_text: str
     job_description: str
 
-    # NEVER REMOVE SKILLS
-    skills: List[str]
+    # NEW: Executive summary (5-6 lines)
+    executive_summary: str
 
+    # Core analysis outputs
+    skills: List[str]
     ats_result: Dict[str, Any]
 
-    improvements: List[str]
+    # NEW: LLM-generated career intelligence (replaces hardcoded)
+    career_intelligence: Dict[str, Any]
 
+    improvements: List[str]
     questions: List[Dict[str, str]]
 
-    # NEW: CAREER INTELLIGENCE OUTPUT
-    career_direction: List[str]
+    # NEW: Tailored cover letter
+    cover_letter: str
+
+    # NEW: Pipeline status ("ok" | "degraded" | "error")
+    status: str
 
 
 # -------------------------
-# GRAPH BUILDER
+# GRAPH BUILDER (V2 — SINGLE NODE)
 # -------------------------
 def build_graph():
     workflow = StateGraph(ResumeState)
 
-    workflow.add_node("skill_extractor", skill_node)
-    workflow.add_node("ats_analyzer", ats_node)
-    workflow.add_node("improvement_generator", improvement_node)
-    workflow.add_node("interview_generator", interview_node)
+    # ONE node replaces the previous 4-node chain
+    workflow.add_node("unified_analyzer", unified_analysis_node)
 
-    workflow.set_entry_point("skill_extractor")
-
-    workflow.add_edge("skill_extractor", "ats_analyzer")
-    workflow.add_edge("ats_analyzer", "improvement_generator")
-    workflow.add_edge("improvement_generator", "interview_generator")
-    workflow.add_edge("interview_generator", END)
+    workflow.set_entry_point("unified_analyzer")
+    workflow.add_edge("unified_analyzer", END)
 
     return workflow.compile()
