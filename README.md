@@ -17,6 +17,8 @@ pinned: false
   <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django"/>
   <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React"/>
   <img src="https://img.shields.io/badge/LangGraph-Agentic-7c3aed?style=for-the-badge&logo=statuspage&logoColor=white" alt="LangGraph"/>
+  <img src="https://img.shields.io/badge/ChromaDB-RAG_Vector-FF6F61?style=for-the-badge&logo=databricks&logoColor=white" alt="ChromaDB"/>
+  <img src="https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions"/>
 </p>
 
 <p align="center">
@@ -34,21 +36,22 @@ pinned: false
 <div align="center">
 
 ```ascii
-╔═══════════════════════════════════════════════════════════════╗
-║                                                               ║
-║   🧠 LANGGRAPH MULTI-AGENT RESUME ANALYZER                    ║
-║                                                               ║
-║   ⚡ PARSE       → Advanced Text Extraction (.pdf, .docx, .doc) ║
-║   🎯 ATS MATCH   → Realistic Score Alignment & Recommendations  ║
-║   🤖 INTERVIEW   → Tailored Questions & Answers Preparation     ║
-║   💾 LONG MEMORY → ChromaDB Persistent Vector Database Storage   ║
-║                                                               ║
-╚═══════════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║ 🧠 LANGGRAPH MULTI-AGENT RESUME ANALYZER                         ║
+║                                                                  ║
+║ ⚡ PARSE       → Advanced Text Extraction (.pdf, .docx, .doc)    ║
+║ 🎯 HYBRID MATCH → BM25 Keyword Floor + Groq Multi-Dim LLM        ║
+║ 🛡️ SECURITY    → Llama Prompt Guard 2 Injection Filter (~10ms)   ║
+║ 🤖 INTERVIEW   → 15 Technical & Behavioral Q&As + Cover Letter   ║
+║ 💾 RAG MEMORY  → ChromaDB 4-Collection Persistent Memory Store   ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
 ```
 
 </div>
 
-> A **next-generation AI-powered Career Copilot** that leverages a multi-agent LangGraph workflow to scan resumes against target job descriptions, evaluate semantic match score, find missing skills, generate CV improvements, create customized mock interview guides, and map out career trajectories.
+> A **next-generation AI-powered Career Copilot** leveraging a layered hybrid architecture (Deterministic BM25 Keyword Floor + Groq Multi-Dimensional LLM) and ChromaDB RAG vector store. It scans resumes against target job descriptions, enforces hard-skill ground truths, flags score divergence QA risks, generates tailored cover letters & 15 interview guides, and tracks candidate evolution deltas.
 
 ---
 
@@ -60,17 +63,19 @@ pinned: false
 
 ### 🎨 **Stunning Glassmorphism UI**
 - 🌌 **Ambient Glows** - Futuristic indigo and purple backdrop lights
-- 🌈 **Vibrant Indicators** - High-contrast visual match gauges
+- 🌈 **Vibrant Indicators** - High-contrast visual match gauges & BM25 badges
 - ✨ **Custom Typography** - Styled with modern Outfit typography
+- 📊 **Executive Summary** - Strategic evaluation & score evolution deltas
 - 📥 **Interactive Dropzone** - Seamless file drag & drop
 
 </td>
 <td width="50%">
 
 ### ⚙️ **AI & Agentic Pipeline**
-- 🤖 **LangGraph Workflows** - Multi-agent node orchestrations
-- 🧠 **ChromaDB Vector Store** - Long-term career memory storage
-- 🔍 **Cosine Similarity** - Embedded job description fit matching
+- 🤖 **Layered Hybrid AI** - BM25 Floor + Groq LLM Multi-Dimensional
+- 🛡️ **AI Security Pre-Flight** - Llama Prompt Guard 2 injection defense
+- 🧠 **ChromaDB RAG Memory** - 4 collections tracking candidate evolution
+- ⚖️ **Score Divergence QA** - Automated check flagging >35% LLM/BM25 deltas
 - 📄 **Custom File Parsers** - Handles pdf, docx, and legacy doc files
 
 </td>
@@ -86,21 +91,21 @@ pinned: false
 ```mermaid
 graph TD
     A[⚛️ React Frontend - Vite] -->|POST resume + JD| B[🐍 Django Backend API]
-    B --> C[📄 Custom Parser]
-    C -->|Extract text| D{🤖 LangGraph Agent Flow}
-    D --> E[1. Skill Extractor]
-    E --> F[2. ATS Match Analyzer]
-    F --> G[3. Job Trend Engine]
-    G --> H[4. Improvement Generator]
-    H --> I[5. Interview Prep Coach]
-    I --> J[6. Career Memory Saver]
-    J --> K[(💾 ChromaDB Persistent Store)]
-    D -->|SaaS Output| L[⚡ Sentence Transformers]
-    L -->|all-MiniLM-L6-v2 Embeddings| K
+    B --> C[🛡️ Llama Prompt Guard 2 Security Filter]
+    C -->|Safe Payload| D[📄 Custom File Parser]
+    D -->|Extract text| E{🤖 Unified Analyzer Service}
+    E --> F[1. Layer 1: BM25 Keyword Floor]
+    E --> G[2. Layer 2: Groq Multi-Dim LLM]
+    F & G --> H[3. Layer 3: Divergence QA Check]
+    H --> I[4. Dynamic ChromaDB RAG Vector Store]
+    I -->|Store & Retrieve| J[(💾 4 Collections: Benchmarks, History, Rubrics, Skills)]
+    H --> K[5. Executive Summary & Tailored Cover Letter]
+    H --> L[6. 15 Interview Q&As Generator]
     style A fill:#61DAFB,stroke:#0099cc,stroke-width:2px,color:#000
     style B fill:#092E20,stroke:#059669,stroke-width:2px,color:#fff
-    style D fill:#7c3aed,stroke:#5b21b6,stroke-width:3px,color:#fff
-    style K fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#fff
+    style C fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#fff
+    style E fill:#7c3aed,stroke:#5b21b6,stroke-width:3px,color:#fff
+    style J fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#fff
 ```
 
 </div>
@@ -111,13 +116,15 @@ graph TD
 
 | Stage | Node / Tool | Description | Model/Engine |
 |:---|:---:|:---|:---|
+| **Security** | `prompt_guard` | Pre-flight prompt injection defense (~10ms) | `meta-llama/llama-prompt-guard-2-86m` |
 | **Parsing** | `pdf_parser` | Safely extracts text from pdf, docx, doc | `pypdf`, `python-docx`, raw binary streams |
-| **Extraction** | `skill_extractor` | Extracts technical skills from CV | Groq `openai/gpt-oss-120b` |
-| **Analysis** | `ats_analyzer` | Matches CV keywords against Job Requirements | Groq `openai/gpt-oss-120b` |
-| **Storage** | `vector_store` | Embeds & persists skill profiles for RAG retrieval | ChromaDB |
-| **Optimization** | `improvement_generator` | Generates CV structure & content improvements | Groq `openai/gpt-oss-120b` |
-| **Preparation** | `interview_generator` | Tailors custom interview prep guides | Groq `openai/gpt-oss-120b` |
-| **Memory** | `career_memory` | Indexes data to vector database for tracking | `ChromaDB` Persistent Store |
+| **Keyword Floor** | `bm25_floor` | Objective term-frequency hard-skill matching | Deterministic BM25 Frequency Engine |
+| **Analysis** | `multi_dim_analyzer` | Multi-dimensional resume vs JD fit analysis | Groq `openai/gpt-oss-120b` |
+| **QA Check** | `divergence_check` | Detects >35% LLM vs BM25 score divergence | Automated Divergence Guardrail |
+| **RAG Store** | `rag_engine` | Embeds & persists candidate scan history | ChromaDB 4-Collection Vector Store |
+| **Executive** | `executive_summary` | Generates strategic candidate summary & deltas | Groq `openai/gpt-oss-120b` |
+| **Preparation** | `interview_generator` | Generates 15 tailored technical & behavioral Q&As | Groq `openai/gpt-oss-120b` |
+| **Cover Letter** | `cover_letter` | Auto-generates tailored professional cover letter | Groq `openai/gpt-oss-120b` |
 
 ---
 
@@ -129,7 +136,7 @@ graph TD
 
 ```bash
 ✅ Python 3.10+
-✅ VITE React.js(for frontend)
+✅ Node.js 20+ / VITE React.js (for frontend)
 ✅ Groq API Key (Free)
 ```
 
